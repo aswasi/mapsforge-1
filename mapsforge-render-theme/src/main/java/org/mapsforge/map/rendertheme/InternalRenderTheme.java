@@ -25,7 +25,8 @@ public enum InternalRenderTheme implements XmlRenderTheme {
 	 * 
 	 * @see <a href="http://wiki.openstreetmap.org/wiki/Osmarender">Osmarender</a>
 	 */
-	OSMARENDER("/osmarender/", "osmarender.xml");
+	OSMARENDER("/osmarender/", "osmarender.xml"),
+  ANDROMAPS("/assets/rendertheme/", "andromaps_hc.xml");
 
 	private final String absolutePath;
 	private final String file;

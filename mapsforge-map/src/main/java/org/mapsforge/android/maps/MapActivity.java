@@ -63,7 +63,7 @@ public abstract class MapActivity extends Activity {
 	 */
 	private final List<MapView> mapViews = new ArrayList<MapView>(2);
 
-	private void destroyMapViews() {
+	public void destroyMapViews() {
 		while (!this.mapViews.isEmpty()) {
 			MapView mapView = this.mapViews.remove(0);
 			mapView.destroy();

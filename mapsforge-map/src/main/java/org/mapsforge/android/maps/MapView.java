@@ -21,6 +21,8 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
+
 
 import org.mapsforge.android.AndroidUtils;
 import org.mapsforge.android.maps.inputhandling.MapMover;
@@ -96,14 +98,21 @@ public class MapView extends ViewGroup {
 	private final TouchEventHandler touchEventHandler;
 	private final ZoomAnimator zoomAnimator;
 
+  static AtomicInteger nextId = new AtomicInteger();
+  
 	/**
 	 * @param context
-	 *            the enclosing MapActivity instance.
-	 * @throws IllegalArgumentException
-	 *             if the context object is not an instance of {@link MapActivity}.
+	 *            the enclosing Activity or Fragment.
 	 */
 	public MapView(Context context) {
 		this(context, null);
+	}
+
+  /**
+	 * @return a unique MapView ID on each call.
+	 */
+	final int getMapViewId() {
+    return nextId.incrementAndGet();
 	}
 
 	/**
@@ -117,10 +126,10 @@ public class MapView extends ViewGroup {
 	public MapView(Context context, AttributeSet attributeSet) {
 		super(context, attributeSet);
 
-		if (!(context instanceof MapActivity)) {
-			throw new IllegalArgumentException("context is not an instance of MapActivity");
-		}
-		MapActivity mapActivity = (MapActivity) context;
+		// if (!(context instanceof MapActivity)) {
+		// 	throw new IllegalArgumentException("context is not an instance of MapActivity");
+		// }
+		// MapActivity mapActivity = (MapActivity) context;
 
 		setBackgroundColor(FrameBuffer.MAP_VIEW_BACKGROUND);
 		setDescendantFocusability(FOCUS_BLOCK_DESCENDANTS);
@@ -128,7 +137,7 @@ public class MapView extends ViewGroup {
 
 		this.debugSettings = new DebugSettings(false, false, false);
 		this.fileSystemTileCache = new FileSystemTileCache(DEFAULT_TILE_CACHE_SIZE_FILE_SYSTEM,
-				mapActivity.getMapViewId());
+				this.getMapViewId());
 		this.fpsCounter = new FpsCounter();
 		this.frameBuffer = new FrameBuffer(this);
 		this.inMemoryTileCache = new InMemoryTileCache(DEFAULT_TILE_CACHE_SIZE_IN_MEMORY);
@@ -140,7 +149,7 @@ public class MapView extends ViewGroup {
 		this.mapZoomControls = new MapZoomControls(context, this);
 		this.overlays = Collections.synchronizedList(new ArrayList<Overlay>());
 		this.projection = new MapViewProjection(this);
-		this.touchEventHandler = new TouchEventHandler(mapActivity, this);
+		this.touchEventHandler = new TouchEventHandler(context, this);
 
 		this.databaseRenderer = new DatabaseRenderer(this.mapDatabase);
 
@@ -166,7 +175,7 @@ public class MapView extends ViewGroup {
 			this.mapViewPosition.setZoomLevel(startZoomLevel.byteValue());
 		}
 
-		mapActivity.registerMapView(this);
+		//mapActivity.registerMapView(this);
 	}
 
 	/**
@@ -583,7 +592,7 @@ public class MapView extends ViewGroup {
 		redraw();
 	}
 
-	void destroy() {
+	public void destroy() {
 		this.overlayController.interrupt();
 		this.mapMover.interrupt();
 		this.mapWorker.interrupt();
@@ -612,13 +621,13 @@ public class MapView extends ViewGroup {
 		return (byte) Math.min(this.mapZoomControls.getZoomLevelMax(), this.databaseRenderer.getZoomLevelMax());
 	}
 
-	void onPause() {
+	public void onPause() {
 		this.mapWorker.pause();
 		this.mapMover.pause();
 		this.zoomAnimator.pause();
 	}
 
-	void onResume() {
+	public void onResume() {
 		this.mapWorker.proceed();
 		this.mapMover.proceed();
 		this.zoomAnimator.proceed();
